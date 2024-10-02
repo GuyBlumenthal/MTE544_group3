@@ -21,10 +21,8 @@ class Logger:
     def log_values(self, values_list):
 
         with open(self.filename, 'a') as file:
-            vals_str=""
-
             # TODO Part 5: Write the values from the list to the file
-            ...
+            vals_str = ", ".join(values_list)
             
             vals_str+="\n"
             
