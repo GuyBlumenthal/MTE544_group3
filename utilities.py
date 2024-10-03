@@ -19,15 +19,13 @@ class Logger:
 
 
     def log_values(self, values_list):
-
         with open(self.filename, 'a') as file:
-            # TODO Part 5: Write the values from the list to the file
+
+            # Add comma seperated values to the next line of the file
             vals_str = ", ".join(values_list)
-            
-            vals_str+="\n"
-            
+            vals_str += "\n"
+
             file.write(vals_str)
-            
 
     def save_log(self):
         pass
