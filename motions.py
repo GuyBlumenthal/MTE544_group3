@@ -22,7 +22,7 @@ motion_types=['circle', 'spiral', 'line']
 # Used to determine which type of robot is running (Either a simulation or in-lab)
 SIM_RUN = 'SIM'
 LAB_RUN = 'LAB'
-RUN_TYPE = SIM_RUN
+RUN_TYPE = LAB_RUN
 
 class motion_executioner(Node):
     
@@ -53,6 +53,13 @@ class motion_executioner(Node):
                 history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
                 depth=5,
             )
+        elif RUN_TYPE == LAB_RUN:
+            qos=QoSProfile(
+                reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+                history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+                depth=5,
+            )
+
         else:
             raise Exception(f"Undefined QoSProfile for run type {RUN_TYPE}")
 
@@ -135,11 +142,11 @@ class motion_executioner(Node):
     def make_spiral_twist(self):
         # Spiral motion -> Constant rotational velocity, increasing linear velocity
         msg=Twist()
-        coeff = 0.02 # Determined empirically
+        coeff = 0.1 # Determined empirically
 
         # Max out at linear speed = 2 for safety
-        msg.linear.x = min(float(self.get_seconds() - self.init_time) * coeff, 2)
-        msg.angular.z = 2.0
+        msg.linear.x = min(float(self.get_seconds() - self.init_time) * coeff, 5)
+        msg.angular.z = 1.5
 
         return msg
     
