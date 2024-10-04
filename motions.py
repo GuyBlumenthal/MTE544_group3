@@ -91,9 +91,10 @@ class motion_executioner(Node):
                 
     # Laser Logger Callback
     def laser_callback(self, laser_msg: LaserScan):
+        ranges = [str(i) for i in laser_msg.ranges]
         self.laser_logger.log_values([
-            f"[{' : '.join(laser_msg.ranges)}]",                # ranges
             laser_msg.angle_increment,                          # angle_increment
+            f"[{' : '.join(ranges)}]",                          # list of ranges
             Time.from_msg(laser_msg.header.stamp).nanoseconds,  # stamp
         ])
                 

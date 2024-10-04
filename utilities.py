@@ -19,6 +19,7 @@ class Logger:
 
 
     def log_values(self, values_list):
+        values_list = [str(i) for i in values_list]
         with open(self.filename, 'a') as file:
 
             # Add comma seperated values to the next line of the file
