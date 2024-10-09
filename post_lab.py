@@ -73,7 +73,7 @@ def plot_odom(sensor, motion):
     plt.show()
     
 
-def plot_laser(file):
+def plot_laser(file, motion):
     LINE_NUM = 1
 
     with open(file, 'r') as f:
@@ -99,7 +99,11 @@ def plot_laser(file):
                 y.append(distance * np.sin(current_angle))
             current_angle += angle_inc
 
-        plt.scatter(x, y)
+        plt.title(f"Plot of range data in one timestamp")
+        plt.scatter(x, y, label="Laser Scan Position")
+        plt.legend()
+        plt.xlabel("X Position")
+        plt.ylabel("Y Position")
         plt.grid()
         plt.show()
     
@@ -120,7 +124,7 @@ def plot(sensor, motion):
         case SENSOR.ODOM:
             plot_odom(sensor, motion)
         case SENSOR.LASER:
-            plot_laser(in_file)
+            plot_laser(in_file, motion)
 
 def Main():
     os.makedirs("data_out", exist_ok=True)
@@ -128,14 +132,14 @@ def Main():
     # Set up permutation table. Comment out lines for sensors and motions to exclude
     sensor_list = [
         # SENSOR.IMU,
-        SENSOR.ODOM,
-        # SENSOR.LASER
+        # SENSOR.ODOM,
+        SENSOR.LASER
     ]
 
     motion_list = [
         MOTION.LINE,
-        MOTION.CIRCLE,
-        MOTION.SPIRAL
+        # MOTION.CIRCLE,
+        # MOTION.SPIRAL
     ]
 
     for sensor in sensor_list:
