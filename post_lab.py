@@ -4,6 +4,7 @@ from utilities import Logger
 import numpy as np
 import matplotlib.pyplot as plt
 from math import floor
+import math
 
 class SENSOR:
     IMU = "imu"
@@ -46,6 +47,36 @@ def plot_odom(file):
     
 
 def plot_laser(file):
+    LINE_NUM = 1
+
+    with open(file, 'r') as f:
+        lines = f.readlines()
+
+        angle_inc, distances, timestamp = lines[LINE_NUM].split(",")
+
+        print(lines[LINE_NUM])
+
+        angle_inc = float(angle_inc)
+
+        distances = distances.replace('[', '')
+        distances = distances.replace(']', '')
+        distances = distances.split(':')
+        distances = [float(distance) for distance in distances]
+
+        x = []
+        y = []
+        current_angle = np.pi/2.0
+        for distance in distances:
+            if not math.isinf(distance):
+                x.append(distance * np.cos(current_angle))
+                y.append(distance * np.sin(current_angle))
+            current_angle += angle_inc
+
+        plt.scatter(x, y)
+        plt.grid()
+        plt.show()
+    
+
     pass
 
 def plot(sensor, motion):
