@@ -22,7 +22,7 @@ motion_types=['circle', 'spiral', 'line']
 # Used to determine which type of robot is running (Either a simulation or in-lab)
 SIM_RUN = 'SIM'
 LAB_RUN = 'LAB'
-RUN_TYPE = LAB_RUN
+RUN_TYPE = SIM_RUN
 
 class motion_executioner(Node):
     
@@ -90,9 +90,9 @@ class motion_executioner(Node):
     # Odometry Logger Callback       
     def odom_callback(self, odom_msg: Odometry):
         self.odom_logger.log_values([
-            odom_msg.twist.pose.linear.x,                      # x
-            odom_msg.twist.pose.linear.y,                      # y
-            odom_msg.twist.pose.angular.z,                     # th  
+            odom_msg.pose.pose.position.x,                      # x
+            odom_msg.pose.pose.position.y,                      # y
+            euler_from_quaternion([odom_msg.pose.pose.orientation.x, odom_msg.pose.pose.orientation.y, odom_msg.pose.pose.orientation.z, odom_msg.pose.pose.orientation.w])[2],                     # th  
             Time.from_msg(odom_msg.header.stamp).nanoseconds    # stamp
         ])
                 
