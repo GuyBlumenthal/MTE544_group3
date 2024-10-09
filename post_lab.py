@@ -18,7 +18,7 @@ class MOTION:
 FILE = lambda sensor, motion: f"lab1_data/{sensor}_content_{motion}.csv"
 
 def plot_imu(file):
-    pass
+    plot_errors(file)
 
 def plot_odom(file):
     vectors = []
@@ -69,13 +69,13 @@ def Main():
 
     # Set up permutation table. Comment out lines for sensors and motions to exclude
     sensor_list = [
-        # SENSOR.IMU,
-        SENSOR.ODOM,
+        SENSOR.IMU,
+        # SENSOR.ODOM,
         # SENSOR.LASER
     ]
 
     motion_list = [
-        # MOTION.LINE,
+        MOTION.LINE,
         MOTION.CIRCLE,
         # MOTION.SPIRAL
     ]
