@@ -90,9 +90,9 @@ class motion_executioner(Node):
     # Odometry Logger Callback       
     def odom_callback(self, odom_msg: Odometry):
         self.odom_logger.log_values([
-            odom_msg.twist.twist.linear.x,                      # x
-            odom_msg.twist.twist.linear.y,                      # y
-            odom_msg.twist.twist.angular.z,                     # th  
+            odom_msg.twist.pose.linear.x,                      # x
+            odom_msg.twist.pose.linear.y,                      # y
+            odom_msg.twist.pose.angular.z,                     # th  
             Time.from_msg(odom_msg.header.stamp).nanoseconds    # stamp
         ])
                 
