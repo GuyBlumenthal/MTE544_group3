@@ -16,7 +16,7 @@ class MOTION:
     CIRCLE = "circle"
     SPIRAL = "spiral"
 
-FILE = lambda sensor, motion: f"lab1_sim_data/{sensor}_content_{motion}.csv"
+FILE = lambda sensor, motion: f"lab1_data/{sensor}_content_{motion}.csv"
 
 def plot_imu(file):
     plot_errors(file)
