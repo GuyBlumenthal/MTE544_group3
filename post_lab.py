@@ -15,18 +15,28 @@ class MOTION:
     CIRCLE = "circle"
     SPIRAL = "spiral"
 
-FILE = lambda sensor, motion: f"lab1_data/{sensor}_content_{motion}.csv"
+FILE = lambda sensor, motion: f"lab1_sim_data/{sensor}_content_{motion}.csv"
 
 def plot_imu(file):
     plot_errors(file)
 
-def plot_odom(file):
+def plot_odom(sensor, motion):
     vectors = []
     
+    file = FILE(sensor, motion)
+
     with open(file, 'r') as f:
         lines = f.readlines()
         for line in lines[1:]:
             vectors.append([float(item) for item in line.split(",")])
+
+    every = {
+        MOTION.LINE: 15,
+        MOTION.CIRCLE: 10,
+        MOTION.SPIRAL: 5,
+    }[motion]
+
+    vectors = vectors[0:-1:every]
             
     x, y, u, v = [
         [vector[0] for vector in vectors],
@@ -35,12 +45,29 @@ def plot_odom(file):
         [np.sin(vector[2]) for vector in vectors],
     ]
 
-    xlim = [min(x), max(x)]
-    ylim = [min(y), max(y)]
+    def lims(series):
+        s_diff = 0.8 * (max(series) - min(series))
+        s_avg = np.average(series)
 
+        s_max = s_avg + s_diff
+        s_min = s_avg - s_diff
+
+        return [s_min, s_max]
+
+    xlim = lims(x)
+    ylim = lims(y)
+
+    lim = [min(xlim[0], ylim[0]), max(xlim[1], ylim[1])]
+
+    plt.title(f"Plot of IMU data for {motion} motion")
     plt.quiver(x, y, u, v)
-    plt.xlim(xlim[0], xlim[1])
-    plt.ylim(ylim[0], ylim[1])
+    plt.scatter([], [], marker=r'$\longrightarrow$', c="black", s=120, label="Robot Orientation")
+    plt.scatter(x, y, color='b', s=20, marker='x', label="Robot Position")
+    plt.xlim(lim)
+    plt.ylim(lim)
+    plt.legend()
+    plt.xlabel("X Position")
+    plt.ylabel("Y Position")
     plt.grid()
     plt.show()
     
@@ -60,7 +87,7 @@ def plot(sensor, motion):
         case SENSOR.IMU:
             plot_imu(in_file)
         case SENSOR.ODOM:
-            plot_odom(in_file)
+            plot_odom(sensor, motion)
         case SENSOR.LASER:
             plot_laser(in_file)
 
@@ -69,15 +96,15 @@ def Main():
 
     # Set up permutation table. Comment out lines for sensors and motions to exclude
     sensor_list = [
-        SENSOR.IMU,
-        # SENSOR.ODOM,
+        # SENSOR.IMU,
+        SENSOR.ODOM,
         # SENSOR.LASER
     ]
 
     motion_list = [
         MOTION.LINE,
         MOTION.CIRCLE,
-        # MOTION.SPIRAL
+        MOTION.SPIRAL
     ]
 
     for sensor in sensor_list:
