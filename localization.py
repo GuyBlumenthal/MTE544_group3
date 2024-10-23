@@ -1,18 +1,12 @@
 import sys
 
-from utilities import Logger, euler_from_quaternion
+from utilities import Logger, euler_from_quaternion, run_qos
 from rclpy.time import Time
 from rclpy.node import Node
 
-from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 from nav_msgs.msg import Odometry as odom
 
 from rclpy import init, spin
-
-# Used to determine which type of robot is running (Either a simulation or in-lab)
-SIM_RUN = 'SIM'
-LAB_RUN = 'LAB'
-RUN_TYPE = LAB_RUN
 
 rawSensor = 0
 class localization(Node):
@@ -21,22 +15,7 @@ class localization(Node):
 
         super().__init__("localizer")
 
-        if RUN_TYPE == SIM_RUN: # Turtlebot3 Simulation
-            qos=QoSProfile(
-                reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE,
-                history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
-                depth=5,
-            )
-        elif RUN_TYPE == LAB_RUN: # In Lab Robot
-            qos=QoSProfile(
-                reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
-                history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
-                depth=5,
-            )
-        else:
-            raise Exception(f"Undefined QoSProfile for run type {RUN_TYPE}")
-
-        odom_qos=qos
+        odom_qos=run_qos
 
         self.loc_logger=Logger("robot_pose.csv", ["x", "y", "theta", "stamp"])
         self.pose=None

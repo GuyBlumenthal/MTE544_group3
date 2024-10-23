@@ -1,6 +1,27 @@
 from math import atan2, asin, sqrt
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 
 M_PI=3.1415926535
+
+
+# Used to determine which type of robot is running (Either a simulation or in-lab)
+SIM_RUN = 'SIM'
+LAB_RUN = 'LAB'
+RUN_TYPE = LAB_RUN
+
+run_qos = {
+    SIM_RUN: QoSProfile(
+        reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+        history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+        depth=5,
+    ),
+    LAB_RUN: QoSProfile(
+        reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+        history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+        depth=5,
+    )
+}[RUN_TYPE]
+
 
 class Logger:
 
@@ -139,10 +160,9 @@ def calculate_angular_error(current_pose, goal_pose):
     error_angular = theta2 - theta1
 
     # Remember to handle the cases where the angular error might exceed the range [-π, π]
-
-    if error_angular > M_PI:
+    while error_angular > M_PI:
         error_angular -= 2 * M_PI
-    if error_angular < -M_PI:
+    while error_angular < -M_PI:
         error_angular += 2 * M_PI
 
     return error_angular
