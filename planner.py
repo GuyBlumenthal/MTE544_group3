@@ -1,3 +1,5 @@
+import numpy as np
+
 # Type of planner
 POINT_PLANNER=0; TRAJECTORY_PLANNER=1
 
@@ -21,9 +23,21 @@ class planner:
         y = goalPoint[1]
         return x, y
 
-    # TODO Part 6: Implement the trajectories here
     def trajectory_planner(self):
-        pass
+        traj = {
+            "PARABOLA": {
+                "min": 0,
+                "max": 1.5,
+                "func": lambda x: x**2,
+            },
+            "SIGMOID": {
+                "min": 0,
+                "max": 2.5,
+                "func": lambda x: 2 / (1 + np.exp(-2 * x)) - 1
+            }
+        }["SIGMOID"]
+
+
         # the return should be a list of trajectory points: [ [x1,y1], ..., [xn,yn]]
-        # return
+        return np.vectorize(traj['func'])(np.linspace(traj["min"], traj["max"], 50))
 
