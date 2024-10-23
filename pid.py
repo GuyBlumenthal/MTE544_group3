@@ -82,7 +82,7 @@ class PID_ctrl:
         
         # TODO Part 4: Log your errors in the form: error, error_dot, error_int and time stamp
         latest_time_stamp = Time.from_msg(stamp)
-        self.logger.log_values(latest_error, error_dot, error_int, latest_time_stamp))
+        self.logger.log_values(latest_error, error_dot, error_int, latest_time_stamp)
         
         # TODO Part 4: Implement the control law of P-controller
         if self.type == P:
