@@ -71,6 +71,8 @@ class decision_maker(Node):
         # Check if you reached the goal
         if type(self.goal) == list:
             goal_point = self.goal[-1]
+        else:
+            goal_point = self.goal
         reached_goal = calculate_linear_error(self.localizer.getPose(), goal_point) < MARGIN
 
 
@@ -86,12 +88,10 @@ class decision_maker(Node):
         velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
 
         # Publish the command to the robot
-        cmd_msg = Twist()
+        vel_msg.linear.x = velocity
+        vel_msg.angular.z = yaw_rate
 
-        cmd_msg.linear.x = velocity
-        cmd_msg.angular.z = yaw_rate
-
-        self.publisher.publish(cmd_msg)
+        self.publisher.publish(vel_msg)
 
 import argparse
 
