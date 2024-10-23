@@ -98,7 +98,7 @@ def plot_imu(file, motion, i):
         plot_def(
             2,
             a_y,
-            f"Tangential Acceleration in {motion.capitalize()} Motion",
+            f"Radial Acceleration in {motion.capitalize()} Motion",
             "Y Accel",
             'm/s^2'
         ),
@@ -106,7 +106,7 @@ def plot_imu(file, motion, i):
             3,
             omega_z,
             f"Rotational Velocity in {motion.capitalize()} Motion",
-            "Z Rotation",
+            "Z omega",
             'rad/s'
         )
     ]
@@ -114,17 +114,21 @@ def plot_imu(file, motion, i):
     # fig, axes = plt.subplot(len(plots), 1)
     # fig.tight_layought
     for plot in plots:
-        plt.subplot(len(plots), 3, i + (plot['index'] - 1) * 3)
+        # plt.subplot(len(plots), 3, i + (plot['index'] - 1) * 3)
+        plt.subplot(1, 3, i)
         plt.plot(t, plot['value'], label=plot['label'])
-        plt.plot(t, lpf(t, plot['value']), label="LPF")
+        # plt.plot(t, lpf(t, plot['value']), label=f"LPF for {plot['label']}")
 
-        multiple = 2.5
-        plt.ylim(min(plot['value']) * multiple, max(plot['value']) * multiple)
+        # multiple = 2.5
+        # plt.ylim(min(plot['value']) * multiple, max(plot['value']) * multiple)
 
         plt.legend()
         plt.xlabel('Time [s]')
-        plt.ylabel(f"{plot['label']} [{plot['unit']}]")
+        # plt.ylabel(f"{plot['label']} [{plot['unit']}]")
         plt.title(plot['title'])
+    plt.grid()
+    plt.title(f"Movement for {motion} motion")
+    plt.ylabel("[m/s^2] | [rad/s]")
 
 
 
@@ -142,13 +146,12 @@ def plot_odom(file, motion, i):
         MOTION.SPIRAL: 10,
     }[motion]
 
-    vectors = vectors[0:-1:every]
-
-    x, y, u, v = [
+    x, y, u, v, th= [
         [vector[0] for vector in vectors],
         [vector[1] for vector in vectors],
         [np.cos(vector[2]) for vector in vectors],
         [np.sin(vector[2]) for vector in vectors],
+        [vector[2] for vector in vectors],
     ]
 
     def lims(series):
@@ -165,17 +168,27 @@ def plot_odom(file, motion, i):
 
     lim = np.array([min(xlim[0], ylim[0]), max(xlim[1], ylim[1])])
 
-    plt.subplot(1, 3, i)
+    plt.subplot(2, 3, i)
     plt.title(f"Plot of Odometer data for {motion} motion")
-    plt.quiver(x, y, u, v)
+    plt.quiver(x[0:-1:every], y[0:-1:every], u[0:-1:every], v[0:-1:every])
     plt.scatter([], [], marker=r'$\longrightarrow$', c="black", s=120, label="Robot Orientation")
-    plt.scatter(x, y, color='b', s=20, marker='x', label="Robot Position")
+    plt.scatter(x[0:-1:every], y[0:-1:every], color='b', s=20, marker='x', label="Robot Position")
     plt.xlim(lim)
-    plt.ylim(2 * lim)
+    plt.ylim(lim)
     plt.legend()
     plt.xlabel("X Position")
     plt.ylabel("Y Position")
     plt.grid()
+
+    plt.subplot(2, 3, i + 3)
+    plt.title(f"Plot of Odometer data over time for {motion}")
+    plt.plot(x, label='X')
+    plt.plot(y, label='Y')
+    plt.plot(th, label='Theta')
+    plt.legend()
+    plt.grid()
+    plt.xlabel('Time')
+    plt.ylabel('[m] | [rad]')
 
 
 def plot_laser(file, motion, i):
@@ -245,7 +258,7 @@ def Main():
     os.makedirs("data_out", exist_ok=True)
 
     # Select which sensor you would like to plot
-    sensor = SENSOR.LASER
+    sensor = SENSOR.IMU
 
     if sensor == SENSOR.IMU:
         # Setup A: Plot all the IMU data
