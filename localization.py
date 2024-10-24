@@ -1,6 +1,6 @@
 import sys
 
-from utilities import Logger, euler_from_quaternion, run_qos
+from utilities import Logger, euler_yaw_from_quaternion, run_qos
 from rclpy.time import Time
 from rclpy.node import Node
 
@@ -27,17 +27,18 @@ class localization(Node):
 
 
     def odom_callback(self, pose_msg):
-        theta = euler_from_quaternion([
+        theta = euler_yaw_from_quaternion([
             pose_msg.pose.pose.orientation.x,
             pose_msg.pose.pose.orientation.y,
             pose_msg.pose.pose.orientation.z,
             pose_msg.pose.pose.orientation.w
-        ])[2] # [ Pitch, Roll, Yaw] <- We want the Yaw (Around the Z axis)
+        ])
 
-        self.pose= [
+        self.pose = [
             pose_msg.pose.pose.position.x,                      # x
             pose_msg.pose.pose.position.y,                      # y
             theta,                                              # th
+            pose_msg.header.stamp                               # stamp
         ]
 
         # Log the data
@@ -47,11 +48,11 @@ class localization(Node):
         return self.pose
 
 if __name__ == "__main__":
-    rclpy.init()
+    init()
 
     localizer = localization()
 
     try:
-        rclpy.spin(localizer)
+        spin(localizer)
     except KeyboardInterrupt:
         print("Exiting")

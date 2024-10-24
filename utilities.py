@@ -105,7 +105,7 @@ class FileReader:
 
 
 # Function Definition from https://automaticaddison.com/how-to-convert-a-quaternion-into-euler-angles-in-python
-def euler_from_quaternion(quat):
+def euler_yaw_from_quaternion(quat):
     """
     Convert quaternion (w in last place) to euler roll, pitch, yaw.
     quat = [x, y, z, w]

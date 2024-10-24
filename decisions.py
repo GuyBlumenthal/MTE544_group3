@@ -3,7 +3,7 @@
 
 import sys
 
-from utilities import euler_from_quaternion, calculate_angular_error, calculate_linear_error, run_qos
+from utilities import calculate_angular_error, calculate_linear_error, run_qos
 from pid import PID_ctrl
 
 from rclpy import init, spin, spin_once
@@ -62,7 +62,7 @@ class decision_maker(Node):
         # # TODO Part 3: Run the localization node
         # ...    # Remember that this file is already running the decision_maker node.
 
-        if self.localizer.getPose()  is  None:
+        if self.localizer.getPose() is None:
             print("waiting for odom msgs ....")
             return
 
@@ -110,10 +110,15 @@ def main(args=None):
     else:
         print("invalid motion type", file=sys.stderr)
 
-    try:
-        spin(DM)
-    except SystemExit:
-        print(f"reached there successfully {DM.localizer.pose}")
+    while True:
+        try:
+            spin_once(DM)
+            spin_once(DM.localizer)
+        except SystemExit:
+            print(f"reached there successfully {DM.localizer.pose}")
+            break
+        except KeyboardInterrupt:
+            break
 
 
 if __name__=="__main__":

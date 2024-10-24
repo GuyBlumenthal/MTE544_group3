@@ -2,7 +2,7 @@ import numpy as np
 
 
 from pid import PID_ctrl
-from utilities import euler_from_quaternion, calculate_angular_error, calculate_linear_error
+from utilities import euler_yaw_from_quaternion, calculate_angular_error, calculate_linear_error
 
 M_PI=3.1415926535
 
