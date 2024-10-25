@@ -2,13 +2,18 @@ import numpy as np
 
 
 from pid import PID_ctrl
-from utilities import euler_yaw_from_quaternion, calculate_angular_error, calculate_linear_error
+from utilities import euler_yaw_from_quaternion, calculate_angular_error, calculate_linear_error, SIM_RUN, LAB_RUN, RUN_TYPE
 
 M_PI=3.1415926535
 
 P=0; PD=1; PI=2; PID=3
-max_linear_vel = 0.22 # m/s
-max_angular_vel = 2.48 # rad/s
+
+# Sim
+max_linear_vel, max_angular_vel = { # m/s, rad/s
+    SIM_RUN: [0.22, 2.48],
+    LAB_RUN: [0.31, 1.90]
+}[RUN_TYPE]
+
 class controller:
     
     
@@ -16,8 +21,8 @@ class controller:
     def __init__(self, klp=0.2, klv=0.2, kli=0.2, kap=0.2, kav=0.2, kai=0.2):
         
         # TODO Part 5 and 6: Modify the below lines to test your PD, PI, and PID controller
-        self.PID_linear=PID_ctrl(P, klp, klv, kli, filename_="linear.csv")
-        self.PID_angular=PID_ctrl(P, kap, kav, kai, filename_="angular.csv")
+        self.PID_linear=PID_ctrl(PI, klp, klv, kli, filename_="linear.csv")
+        self.PID_angular=PID_ctrl(PI, kap, kav, kai, filename_="angular.csv")
 
     
     def vel_request(self, pose, goal, status):
@@ -31,8 +36,10 @@ class controller:
         
         # TODO Part 4: Add saturation limits for the robot linear and angular velocity
         if linear_vel > max_linear_vel:
+            print("Saturating!")
             linear_vel = max_linear_vel
         elif linear_vel < -max_linear_vel:
+            print("Saturating!")
             linear_vel = -max_linear_vel
         
         if angular_vel > max_angular_vel:

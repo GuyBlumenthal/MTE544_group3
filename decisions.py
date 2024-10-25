@@ -19,13 +19,16 @@ from planner import TRAJECTORY_PLANNER, POINT_PLANNER, planner
 from controller import controller, trajectoryController
 
 
-MARGIN = 0.1
+MARGIN = 0.05
+
+MAX_LIFE = 10
 
 
 class decision_maker(Node):
 
     def __init__(self, publisher_msg, publishing_topic, qos_publisher, goalPoint, rate=10, motion_type=POINT_PLANNER):
         super().__init__("decision_maker")
+        self.timeout = 10
 
         # Publisher for robot motion
         self.publisher=self.create_publisher(publisher_msg, publishing_topic, rate)
@@ -35,12 +38,12 @@ class decision_maker(Node):
         # Instantiate the controller
         # TODO Part 5: Tune your parameters here
         if motion_type == POINT_PLANNER:
-            self.controller=controller(klp=0.2, klv=0.5, kap=0.8, kav=0.6)
+            self.controller=controller(klp=0.2, kli=5, klv=0.1, kap=0.8, kai=0.2, kav=0.1)
             self.planner=planner(POINT_PLANNER)
 
 
         elif motion_type==TRAJECTORY_PLANNER:
-            self.controller=trajectoryController(klp=0.2, klv=0.5, kap=0.8, kav=0.6)
+            self.controller=trajectoryController(klp=0.2, kli=5, klv=0.1, kap=0.8, kai=0.2, kav=0.1)
             self.planner=planner(TRAJECTORY_PLANNER)
 
         else:
@@ -73,25 +76,26 @@ class decision_maker(Node):
             goal_point = self.goal[-1]
         else:
             goal_point = self.goal
-        reached_goal = calculate_linear_error(self.localizer.getPose(), goal_point) < MARGIN
+        at_point = calculate_linear_error(self.localizer.getPose(), goal_point) < MARGIN
 
-
-        if reached_goal:
+        if at_point:
             print("reached goal")
             self.publisher.publish(vel_msg)
 
-            self.controller.PID_angular.logger.save_log()
-            self.controller.PID_linear.logger.save_log()
+            self.timeout = self.timeout - 1
+            if self.timeout <= 0:
+                self.controller.PID_angular.logger.save_log()
+                self.controller.PID_linear.logger.save_log()
 
-            raise SystemExit
+                raise SystemExit
+        else:
+            velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
 
-        velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
+            # Publish the command to the robot
+            vel_msg.linear.x = velocity
+            vel_msg.angular.z = yaw_rate
 
-        # Publish the command to the robot
-        vel_msg.linear.x = velocity
-        vel_msg.angular.z = yaw_rate
-
-        self.publisher.publish(vel_msg)
+            self.publisher.publish(vel_msg)
 
 import argparse
 
@@ -104,7 +108,7 @@ def main(args=None):
     odom_qos=run_qos
 
     if args.motion.lower() == "point":
-        DM=decision_maker(Twist, "/cmd_vel", odom_qos, [2, 2])
+        DM=decision_maker(Twist, "/cmd_vel", odom_qos, [2, 0.2])
     elif args.motion.lower() == "trajectory":
         DM=decision_maker(Twist, "/cmd_vel", odom_qos, [0, 0], motion_type=TRAJECTORY_PLANNER)
     elif args.motion.lower() == "zero":
