@@ -35,9 +35,11 @@ class planner:
                 "max": 2.5,
                 "func": lambda x: 2 / (1 + np.exp(-2 * x)) - 1
             }
-        }["PARABOLA"]
+        }["SIGMOID"]
 
 
         # the return should be a list of trajectory points: [ [x1,y1], ..., [xn,yn]]
-        return np.vectorize(traj['func'])(np.linspace(traj["min"], traj["max"], 50))
+        x = np.linspace(traj["min"], traj["max"], 50)
+        y = np.vectorize(traj['func'])(x)
+        return list(zip(x, y))
 

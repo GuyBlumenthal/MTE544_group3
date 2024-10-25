@@ -107,6 +107,8 @@ def main(args=None):
         DM=decision_maker(Twist, "/cmd_vel", odom_qos, [2, 2])
     elif args.motion.lower() == "trajectory":
         DM=decision_maker(Twist, "/cmd_vel", odom_qos, [0, 0], motion_type=TRAJECTORY_PLANNER)
+    elif args.motion.lower() == "zero":
+        DM=decision_maker(Twist, "/cmd_vel", odom_qos, [0, 0])
     else:
         print("invalid motion type", file=sys.stderr)
 
