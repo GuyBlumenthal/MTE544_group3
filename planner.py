@@ -39,7 +39,7 @@ class planner:
 
 
         # the return should be a list of trajectory points: [ [x1,y1], ..., [xn,yn]]
-        x = np.linspace(traj["min"], traj["max"], 50)
+        x = np.linspace(traj["min"], traj["max"], 10)
         y = np.vectorize(traj['func'])(x)
         return list(zip(x, y))
 
