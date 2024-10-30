@@ -1,6 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 lab_data = lambda cat: [
     f"lab_data/{cat}/angular.csv",
@@ -65,6 +66,19 @@ def GetLabData(folder):
             TH: [float(line[2]) for line in lines[1:]],
             T: [float(line[3])/1e9 - t_0 for line in lines[1:]],
         }
+
+
+    # Determine start time
+    index_0 = round(0.95 * [abs(item) > 0.01 for item in linear_data[EDOT]].index(True))
+
+    for item in angular_data:
+        angular_data[item] = angular_data[item][index_0:]
+
+    for item in linear_data:
+        linear_data[item] = linear_data[item][index_0:]
+
+    for item in pose_data:
+        pose_data[item] = pose_data[item][index_0:]
 
     return angular_data, linear_data, pose_data
 
@@ -144,8 +158,24 @@ def ControllerPlot(controller_name):
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=0.25)
     plt.show()
 
-def TrajectoryPlotter(trajectory):
-    angular_data, linear_data, pose_data = GetLabData(trajectory)
+def TrajectoryPlotter():
+    trajectories = ["Parabola", "Sigmoid"]
+
+    for index, trajectory in enumerate(trajectories):
+        angular_data, linear_data, pose_data = GetLabData(trajectory)
+
+        ax = plt.subplot(1, len(trajectories), index + 1)
+
+        ax.plot(pose_data[X], pose_data[Y])
+
+        ax.set_title(f"Robot Trajectory for {trajectory} Trajectory")
+        ax.set_ylabel("Y")
+        ax.set_xlabel("X")
+        ax.grid()
+
+    plt.suptitle("Trajectories Using PI Controller")
+    plt.tight_layout()
+    plt.show()
 
 def CalculateParameters():
     # Load P data
@@ -174,6 +204,8 @@ def Main():
 
     ControllerPlot("P")
     ControllerPlot("PID")
+
+    TrajectoryPlotter()
 
     CalculateParameters()
 
