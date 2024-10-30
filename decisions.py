@@ -78,6 +78,7 @@ class decision_maker(Node):
             goal_point = self.goal
         at_point = calculate_linear_error(self.localizer.getPose(), goal_point) < MARGIN
 
+        velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
         if at_point:
             print("reached goal")
             self.publisher.publish(vel_msg)
@@ -89,8 +90,6 @@ class decision_maker(Node):
 
                 raise SystemExit
         else:
-            velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
-
             # Publish the command to the robot
             vel_msg.linear.x = velocity
             vel_msg.angular.z = yaw_rate
