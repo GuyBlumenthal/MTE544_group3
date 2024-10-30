@@ -83,9 +83,27 @@ def ControllerPlot(controller_name):
     # |   EvsEDOT   EvsEDOT   |
     # |                       |
     # |-----------------------|
-    fig, axs = plt.subplots(4, 2)
+    ax = plt.subplot(4, 2, 1)
+    ax.plot(angular_data[T], angular_data[E])
+    ax.plot(angular_data[T], angular_data[EDOT])
 
-    axs[2, ].plot(pose_data[X], pose_data[Y])
+    ax = plt.subplot(4, 2, 2)
+    ax.plot(linear_data[T], linear_data[E])
+    ax.plot(linear_data[T], linear_data[EDOT])
+
+    ax = plt.subplot(4, 1, 2)
+    ax.plot(pose_data[T], pose_data[X])
+    ax.plot(pose_data[T], pose_data[Y])
+    ax.plot(pose_data[T], pose_data[TH])
+
+    ax = plt.subplot(4, 1, 3)
+    ax.plot(pose_data[X], pose_data[Y])
+
+    ax = plt.subplot(4, 2, 7)
+    ax.plot(angular_data[EDOT], angular_data[E])
+
+    ax = plt.subplot(4, 2, 8)
+    ax.plot(linear_data[EDOT], linear_data[E])
 
     plt.show()
 
