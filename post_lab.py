@@ -35,26 +35,8 @@ def trajectory_planner():
     y = np.vectorize(traj['func'])(x)
     return x, y
 
-def plot_pose(file):
-    lines = [line.split(',') for line in file.readlines()]
-    x, y, t = [
-        [float(line[0]) for line in lines[1:]],
-        [float(line[1]) for line in lines[1:]],
-        [float(line[2]) for line in lines[1:]],
-    ]
-
-    traj_x, traj_y = trajectory_planner()
-    plt.scatter(x, y)
-    plt.plot(traj_x, traj_y, label="Ref")
-    plt.legend()
-    plt.show()
-
-def ControllerPlot(controller_name):
-    angularF, linearF, poseF = lab_data(controller_name)
-
-    lin_e, lin_edot = [], []
-
-    x, y, theta = [], [], []
+def GetLabData(folder):
+    angularF, linearF, poseF = lab_data(folder)
 
     with open(angularF, 'r') as angular_raw:
         lines = [line.split(',') for line in angular_raw.readlines()]
@@ -84,9 +66,45 @@ def ControllerPlot(controller_name):
             T: [float(line[3])/1e9 - t_0 for line in lines[1:]],
         }
 
+    return angular_data, linear_data, pose_data
 
-    plt.plot(pose_data[X], pose_data[Y])
+
+def ControllerPlot(controller_name):
+    angular_data, linear_data, pose_data = GetLabData(controller_name)
+
+    # Subplots TODO
+    # |-----------------------|
+    # |                       |
+    # |  E,EDOTvsT  E,EDOTvsT |
+    # |                       |
+    # |       X,Y,TH vs T     |
+    # |          XvsY         |
+    # |                       |
+    # |   EvsEDOT   EvsEDOT   |
+    # |                       |
+    # |-----------------------|
+    fig, axs = plt.subplots(4, 2)
+
+    axs[2, ].plot(pose_data[X], pose_data[Y])
+
     plt.show()
+
+def TrajectoryPlotter(trajectory):
+    angular_data, linear_data, pose_data = GetLabData(trajectory)
+
+def CalculateParameters():
+    # Load P data
+    # Load PID data
+    P_angular_data, P_linear_data, P_pose_data = GetLabData("P")
+    PID_angular_data, PID_linear_data, PID_pose_data = GetLabData("PID")
+
+    # Compare Agility, Accuracy, Overshoot for the POINT controller
+
+    # Agility -> Settle time?
+    # Accuracy -> Steady State Error
+    # Overshoot -> %OS
+
+    pass
 
 def Main():
 
@@ -96,7 +114,8 @@ def Main():
     #   e, e_dot vs T of angular
     #   x, y, theta vs T
     #   x vs y
-    #
+    #   e vs e_dot of linear
+    #   e vs e_dot of angular
 
     ControllerPlot("P")
     ControllerPlot("PID")
