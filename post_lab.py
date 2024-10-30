@@ -8,6 +8,13 @@ lab_data = lambda cat: [
     f"lab_data/{cat}/robot_pose.csv"
 ]
 
+E = "e"
+EDOT = "e_dot"
+T = "Time"
+X = "X"
+Y = "Y"
+TH = "Theta"
+
 def trajectory_planner():
     traj = {
         "PARABOLA": {
@@ -42,33 +49,57 @@ def plot_pose(file):
     plt.legend()
     plt.show()
 
+def ControllerPlot(controller_name):
+    angularF, linearF, poseF = lab_data(controller_name)
+
+    lin_e, lin_edot = [], []
+
+    x, y, theta = [], [], []
+
+    with open(angularF, 'r') as angular_raw:
+        lines = [line.split(',') for line in angular_raw.readlines()]
+        t_0 = float(lines[1][3])/1e9
+        angular_data = {
+            E: [float(line[0]) for line in lines[1:]],
+            EDOT: [float(line[1]) for line in lines[1:]],
+            T: [float(line[3])/1e9 - t_0 for line in lines[1:]],
+        }
+
+    with open(linearF, 'r') as linear_raw:
+        lines = [line.split(',') for line in linear_raw.readlines()]
+        t_0 = float(lines[1][3])/1e9
+        linear_data = {
+            E: [float(line[0]) for line in lines[1:]],
+            EDOT: [float(line[1]) for line in lines[1:]],
+            T: [float(line[3])/1e9 - t_0 for line in lines[1:]],
+        }
+
+    with open(poseF, 'r') as pose_raw:
+        lines = [line.split(',') for line in pose_raw.readlines()]
+        t_0 = float(lines[1][3])/1e9
+        pose_data = {
+            X:  [float(line[0]) for line in lines[1:]],
+            Y:  [float(line[1]) for line in lines[1:]],
+            TH: [float(line[2]) for line in lines[1:]],
+            T: [float(line[3])/1e9 - t_0 for line in lines[1:]],
+        }
+
+
+    plt.plot(pose_data[X], pose_data[Y])
+    plt.show()
+
 def Main():
 
-    angular, linear, pose = lab_data("PID")
+    # Required plots:
+    # For each P, PID
+    #   e, e_dot vs T of linear
+    #   e, e_dot vs T of angular
+    #   x, y, theta vs T
+    #   x vs y
+    #
 
-    with open(pose, 'r') as pose_f:
-        plot_pose(pose_f)
-
-    with open(linear, 'r') as angular_f:
-        lines = [line.split(',') for line in angular_f.readlines()]
-        e, e_dot, e_int, stamp = [
-            [float(line[0]) for line in lines[1:]],
-            [float(line[1]) for line in lines[1:]],
-            [float(line[2]) for line in lines[1:]],
-            [float(line[3])/1e9 for line in lines[1:]],
-        ]
-
-        plt.plot(stamp, e, label="P-ERR")
-        plt.plot(stamp, e_int, label="I-ERROR")
-        plt.plot(stamp, e_dot, label="D-ERR")
-
-        plt.legend()
-        plt.grid()
-        plt.show()
-
-
-
-
+    ControllerPlot("P")
+    ControllerPlot("PID")
 
 if __name__ == "__main__":
     Main()
