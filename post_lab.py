@@ -83,28 +83,65 @@ def ControllerPlot(controller_name):
     # |   EvsEDOT   EvsEDOT   |
     # |                       |
     # |-----------------------|
-    ax = plt.subplot(4, 2, 1)
-    ax.plot(angular_data[T], angular_data[E])
-    ax.plot(angular_data[T], angular_data[EDOT])
+    plt.suptitle(f"Controller Data Plot for {controller_name} Controller")
 
-    ax = plt.subplot(4, 2, 2)
-    ax.plot(linear_data[T], linear_data[E])
-    ax.plot(linear_data[T], linear_data[EDOT])
+    ax = plt.subplot(3, 2, 1)
+    ax.plot(angular_data[T], angular_data[E], label="E")
+    ax.plot(angular_data[T], angular_data[EDOT], label="E Dot")
 
-    ax = plt.subplot(4, 1, 2)
-    ax.plot(pose_data[T], pose_data[X])
-    ax.plot(pose_data[T], pose_data[Y])
-    ax.plot(pose_data[T], pose_data[TH])
+    ax.set_title("Angular Error Data")
+    ax.set_ylabel("Errors")
+    ax.set_xlabel("Time")
+    ax.legend()
+    ax.grid()
 
-    ax = plt.subplot(4, 1, 3)
-    ax.plot(pose_data[X], pose_data[Y])
+    ax = plt.subplot(3, 2, 2)
+    ax.plot(linear_data[T], linear_data[E], label="E")
+    ax.plot(linear_data[T], linear_data[EDOT], label="E Dot")
 
-    ax = plt.subplot(4, 2, 7)
+    ax.set_title("Linear Error Data")
+    ax.set_ylabel("Errors")
+    ax.set_xlabel("Time")
+    ax.legend()
+    ax.grid()
+
+    ax = plt.subplot(3, 2, 3)
+    ax.plot(pose_data[T], pose_data[X], label="X")
+    ax.plot(pose_data[T], pose_data[Y], label="Y")
+    ax.plot(pose_data[T], pose_data[TH], label="Theta")
+
+    ax.set_title("Robot State over Time")
+    ax.set_ylabel("State")
+    ax.set_xlabel("Time")
+    ax.legend()
+    ax.grid()
+
+    ax = plt.subplot(3, 2, 4)
+    ax.plot(pose_data[X], pose_data[Y], label="Pose")
+
+    ax.set_title("Robot Trajectory")
+    ax.set_ylabel("Y")
+    ax.set_xlabel("X")
+    ax.legend()
+    ax.grid()
+
+    ax = plt.subplot(3, 2, 5)
     ax.plot(angular_data[EDOT], angular_data[E])
 
-    ax = plt.subplot(4, 2, 8)
+    ax.set_title("Angular Error Plot")
+    ax.set_ylabel("E")
+    ax.set_xlabel("E Dot")
+    ax.grid()
+
+    ax = plt.subplot(3, 2, 6)
     ax.plot(linear_data[EDOT], linear_data[E])
 
+    ax.set_title("Linear Error Plot")
+    ax.set_ylabel("E")
+    ax.set_xlabel("E Dot")
+    ax.grid()
+
+    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=0.25)
     plt.show()
 
 def TrajectoryPlotter(trajectory):
@@ -137,6 +174,8 @@ def Main():
 
     ControllerPlot("P")
     ControllerPlot("PID")
+
+    CalculateParameters()
 
 if __name__ == "__main__":
     Main()
