@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -177,6 +176,39 @@ def TrajectoryPlotter():
     plt.tight_layout()
     plt.show()
 
+def FindOvershootValue(list, ss):
+    # find zero crossing at the steady state (ss)
+    for i in range(len(list)):
+        if (ss-list[i]) < 0:
+            start = int(i - 0.05*len(list))
+            # Plots for debugging
+            # plt.plot(range(start, len(list)), list[start:])
+            # plt.grid()
+            # plt.show()
+
+            # get largest negative value after zero crossing (overshoot)
+            return (1 - abs(np.min(list[i:]) / ss)) * 100
+    return 0
+
+def FindOvershootPose(pose_list):
+    ss_x = pose_list[X][-1]
+    ss_y = pose_list[Y][-1]
+    ss_th = pose_list[TH][-1]
+    os_x = FindOvershootValue(pose_list[X], ss_x)
+    os_y = FindOvershootValue(pose_list[Y], ss_y)
+    os_th = FindOvershootValue(pose_list[TH], ss_th)
+    return os_x, os_y, os_th
+
+def FindSettlingTime(data_list, ess):
+    margin = 0.02 # 2% of steady state for settling time
+    Ts = 0
+    # find zero crossing
+    for i in range(len(data_list[E])):
+        if abs((data_list[E][i] - ess)/ess) > margin:
+            Ts = data_list[T][i]
+    return Ts
+    
+
 def CalculateParameters():
     # Load P data
     # Load PID data
@@ -184,12 +216,23 @@ def CalculateParameters():
     PID_angular_data, PID_linear_data, PID_pose_data = GetLabData("PID")
 
     # Compare Agility, Accuracy, Overshoot for the POINT controller
-
-    # Agility -> Settle time?
     # Accuracy -> Steady State Error
+    ess_ang_P = P_angular_data[E][-1]
+    ess_lin_P = P_linear_data[E][-1]
+    ess_ang_PID = PID_angular_data[E][-1]
+    ess_lin_PID = PID_linear_data[E][-1] 
+    print(f"Steady state error, P angular: {ess_ang_P} linear {ess_lin_P} PID angular: {ess_ang_PID} linear {ess_lin_PID}")
+    # Agility -> Settle time
+    Ts_ang_P = FindSettlingTime(P_angular_data, ess_ang_P)
+    Ts_lin_P = FindSettlingTime(P_linear_data, ess_lin_P)
+    Ts_ang_PID = FindSettlingTime(PID_angular_data, ess_ang_PID)
+    Ts_lin_PID = FindSettlingTime(PID_linear_data, ess_lin_PID)
+    print(f"Settling time, P angular: {Ts_ang_P} linear: {Ts_lin_P} PID angular: {Ts_ang_PID} linear: {Ts_lin_PID}")
     # Overshoot -> %OS
+    os_x_P, os_y_P , os_th_P = FindOvershootPose(P_pose_data)
+    os_x_PID, os_y_PID, os_th_PID = FindOvershootPose(PID_pose_data)
+    print(f"Overshoot, P x: {os_x_P} y: {os_y_P} th: {os_th_P} PID x: {os_x_PID} y: {os_y_PID} th: {os_th_PID}")
 
-    pass
 
 def Main():
 
