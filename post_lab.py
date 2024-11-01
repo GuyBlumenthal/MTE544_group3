@@ -80,6 +80,10 @@ def GetLabData(folder):
     for item in pose_data:
         pose_data[item] = pose_data[item][index_0:]
 
+    angular_data[T] = np.array(angular_data[T]) - angular_data[T][0]
+    linear_data[T] = np.array(linear_data[T]) - linear_data[T][0]
+    pose_data[T] = np.array(pose_data[T]) - pose_data[T][0]
+
     return angular_data, linear_data, pose_data
 
 
