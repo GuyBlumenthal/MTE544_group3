@@ -20,6 +20,7 @@ class localization(Node):
         self.loc_logger=Logger("robot_pose.csv", ["x", "y", "theta", "stamp"])
         self.pose=None
 
+        # Subscribe to the odometry messages
         if localizationType == rawSensor:
             self.odom_subscription = self.create_subscription(odom, "/odom", self.odom_callback, odom_qos)
         else:
@@ -27,6 +28,7 @@ class localization(Node):
 
 
     def odom_callback(self, pose_msg):
+        # Get the yaw from the pose quaternion
         theta = euler_yaw_from_quaternion([
             pose_msg.pose.pose.orientation.x,
             pose_msg.pose.pose.orientation.y,

@@ -19,8 +19,8 @@ from planner import TRAJECTORY_PLANNER, POINT_PLANNER, planner
 from controller import controller, trajectoryController
 
 
+# MARGIN - How close do we need to get to the point?
 MARGIN = 0.05
-
 MAX_LIFE = 10
 
 
@@ -36,16 +36,12 @@ class decision_maker(Node):
         publishing_period=1/rate
 
         # Instantiate the controller
-        # TODO Part 5: Tune your parameters here
         if motion_type == POINT_PLANNER:
             self.controller=controller(klp=0.2, kli=5, klv=0.1, kap=0.8, kai=0.2, kav=0.1)
             self.planner=planner(POINT_PLANNER)
-
-
         elif motion_type==TRAJECTORY_PLANNER:
             self.controller=trajectoryController(klp=0.2, kli=5, klv=0.1, kap=0.8, kai=0.2, kav=0.1)
             self.planner=planner(TRAJECTORY_PLANNER)
-
         else:
             print("Error! you don't have this planner", file=sys.stderr)
 
@@ -61,15 +57,15 @@ class decision_maker(Node):
 
 
     def timerCallback(self):
-
-        # # TODO Part 3: Run the localization node
-        # ...    # Remember that this file is already running the decision_maker node.
-
+        # Wait to start the controller until we get position data
         if self.localizer.getPose() is None:
             print("waiting for odom msgs ....")
             return
 
         vel_msg=Twist()
+
+        # Calculate potential action using controller
+        velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
 
         # Check if you reached the goal
         if type(self.goal) == list:
@@ -78,8 +74,9 @@ class decision_maker(Node):
             goal_point = self.goal
         at_point = calculate_linear_error(self.localizer.getPose(), goal_point) < MARGIN
 
-        velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
+
         if at_point:
+            # If we've reached the goal - terminate after X seconds and save the logs
             print("reached goal")
             self.publisher.publish(vel_msg)
 
