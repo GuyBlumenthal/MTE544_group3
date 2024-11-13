@@ -16,7 +16,6 @@ class kalman_filter:
         self.x=x
         self.dt = dt
 
-    # TODO Part 3: Replace the matrices with Jacobians where needed
     def predict(self):
 
         self.A = self.jacobian_A()
@@ -26,7 +25,6 @@ class kalman_filter:
 
         self.P= np.dot( np.dot(self.A, self.P), self.A.T) + self.Q
 
-    # TODO Part 3: Replace the matrices with Jacobians where needed
     def update(self, z):
 
         S=np.dot(np.dot(self.C, self.P), self.C.T) + self.R
