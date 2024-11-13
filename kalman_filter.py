@@ -44,8 +44,8 @@ class kalman_filter:
         return np.array([
             v,# v
             w,# w
-            vdot * np.cos(th), # ax
-            vdot * np.sin(th), # ay
+            vdot, # ax
+            v*w, # ay
         ])
 
     def motion_model(self):
@@ -88,7 +88,7 @@ class kalman_filter:
             [0,0,0  , 0, 1, 0], # v
             [0,0,0  , 1, 0, 0], # w
             [0,0,0  , 0, 0, 1], # ax
-            [0,0,0  , ..., ..., 0], # ay
+            [0,0,0  , v, w, 0], # ay
         ])
 
     def get_states(self):
