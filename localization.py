@@ -47,13 +47,13 @@ class localization(Node):
 
         # TODO Part 3: Set up the quantities for the EKF (hint: you will need the functions for the states and measurements)
 
-        x= ...
+        x= [0, 0, 0, 0, 0, 0]
 
-        Q= ...
+        Q= 0.5 * np.eye(6)
 
-        R= ...
+        R= 0.5 * np.eye(4)
 
-        P= ... # initial covariance
+        P= np.eye(6) # initial covariance
 
         self.kf=kalman_filter(P,Q,R, x, dt)
 
