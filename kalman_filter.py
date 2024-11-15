@@ -19,7 +19,7 @@ class kalman_filter:
     def predict(self):
 
         self.A = self.jacobian_A()
-        self.C = self.jacobian_B()
+        self.C = self.jacobian_H()
 
         self.motion_model()
 

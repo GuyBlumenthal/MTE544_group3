@@ -19,9 +19,32 @@ from rclpy import init, spin, spin_once
 import numpy as np
 import message_filters
 
+from math import atan2, asin, sqrt
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
+
+M_PI=3.1415926535
+
+
+# Used to determine which type of robot is running (Either a simulation or in-lab)
+SIM_RUN = 'SIM'
+LAB_RUN = 'LAB'
+RUN_TYPE = LAB_RUN
+
+odom_qos = {
+    SIM_RUN: QoSProfile(
+        reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+        history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+        depth=5,
+    ),
+    LAB_RUN: QoSProfile(
+        reliability=QoSReliabilityPolicy.RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+        history=QoSHistoryPolicy.RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+        depth=5,
+    )
+}[RUN_TYPE]
+
 rawSensors=0
 kalmanFilter=1
-odom_qos=QoSProfile(reliability=2, durability=2, history=1, depth=10)
 
 class localization(Node):
 
@@ -49,7 +72,7 @@ class localization(Node):
 
         x= [0, 0, 0, 0, 0, 0]
 
-        Q= 0.5 * np.eye(6)
+        Q= 0.9 * np.eye(6)
 
         R= 0.5 * np.eye(4)
 
@@ -58,8 +81,8 @@ class localization(Node):
         self.kf=kalman_filter(P,Q,R, x, dt)
 
         # TODO Part 3: Use the odometry and IMU data for the EKF
-        self.odom_sub=message_filters.Subscriber("/odom", odom)
-        self.imu_sub=message_filters.Subscriber("/imu", Imu)
+        self.odom_sub=message_filters.Subscriber(self, odom, "/odom", qos_profile=odom_qos)
+        self.imu_sub=message_filters.Subscriber(self, Imu, "/imu", qos_profile=odom_qos)
 
         time_syncher=message_filters.ApproximateTimeSynchronizer([self.odom_sub, self.imu_sub], queue_size=10, slop=0.1)
         time_syncher.registerCallback(self.fusion_callback)
@@ -89,13 +112,14 @@ class localization(Node):
         x, y, th, w, v, vdot = xhat
         self.pose=np.array([x,
                             y,
-                            th])
+                            th,
+                            odom_msg.header.stamp])
         
         kf_vx, kf_w, kf_ax, kf_ay = self.kf.measurement_model()
 
         # TODO Part 4: log your data
         # log "imu_ax", "imu_ay", "kf_ax", "kf_ay","kf_vx","kf_w","kf_x", "kf_y","stamp"
-        self.loc_logger.log_values(imu_ax, imu_ay, kf_ax, kf_ay, kf_vx, kf_w, x, y, Time.from_msg(odom_msg.header.stamp).nanoseconds)
+        self.loc_logger.log_values([imu_ax, imu_ay, kf_ax, kf_ay, kf_vx, kf_w, x, y, Time.from_msg(odom_msg.header.stamp).nanoseconds])
 
     def odom_callback(self, pose_msg):
 
