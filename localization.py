@@ -53,6 +53,7 @@ class localization(Node):
         super().__init__("localizer")
 
         self.loc_logger=Logger( loggerName , loggerHeaders)
+        self.odom_logger =Logger("odomPose.csv", ["x, y, th, stamp"])
         self.pose=None
 
         if type==rawSensors:
@@ -114,12 +115,18 @@ class localization(Node):
                             y,
                             th,
                             odom_msg.header.stamp])
-        
+
         kf_vx, kf_w, kf_ax, kf_ay = self.kf.measurement_model()
 
         # TODO Part 4: log your data
         # log "imu_ax", "imu_ay", "kf_ax", "kf_ay","kf_vx","kf_w","kf_x", "kf_y","stamp"
         self.loc_logger.log_values([imu_ax, imu_ay, kf_ax, kf_ay, kf_vx, kf_w, x, y, Time.from_msg(odom_msg.header.stamp).nanoseconds])
+        self.odom_logger.log_values([
+            odom_msg.pose.pose.position.x,
+            odom_msg.pose.pose.position.y,
+            euler_from_quaternion(odom_msg.pose.pose.orientation),
+            odom_msg.header.stamp
+        ])
 
     def odom_callback(self, pose_msg):
 
