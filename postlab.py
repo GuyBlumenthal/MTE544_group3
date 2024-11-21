@@ -57,8 +57,7 @@ def load_odom(Q, R, MODE, last_t=math.inf, FLIP=NO_FLIP):
             # Center the odom pose
             data[ODOM_X][-1] = FLIP[0] * (data[ODOM_X][-1] - center[0])
             data[ODOM_Y][-1] = FLIP[1] * (data[ODOM_Y][-1] - center[1])
-            data[STAMP][-1]  = data[STAMP][-1] - center[2]
-
+            # data[STAMP][-1]  = data[STAMP][-1] - center[2]
             data[STAMP][-1] = data[STAMP][-1] / 1e9
 
             if data[STAMP][-1] >= last_t:
@@ -147,20 +146,38 @@ def Main(show=False):
 
 
         # Determine error
-        counts = min(len(kf_spiral[STAMP]), len(odom_spiral[STAMP]))
         eSum = 0
+        counts = min(len(kf_spiral[STAMP]), len(odom_spiral[STAMP]))
+        # align starting times between kf and odom logs
+        odom_offset = 0
+        kf_offset = 0
+        # print(odom_spiral[STAMP])
+        # print(kf_spiral[STAMP])
+        if(odom_spiral[STAMP][0] < kf_spiral[STAMP][0]):
+            for index in range(counts):
+                if odom_spiral[STAMP][index] >= kf_spiral[STAMP][0]:
+                    odom_offset = index
+                    print(f"odom ts: {odom_spiral[STAMP][index]} kf ts: {kf_spiral[STAMP][0]} odom offset: {odom_offset}")
+                    break
+        else:
+            for index in range(counts):
+                if kf_spiral[STAMP][index] >= odom_spiral[STAMP][0]:
+                    kf_offset = index
+                    print(f"kf ts: {kf_spiral[STAMP][index]} odom ts: {odom_spiral[STAMP][0]} kf offset: {kf_offset}")
+                    break
+        counts = min(len(kf_spiral[STAMP]) - kf_offset, len(odom_spiral[STAMP]) - odom_offset)
 
         for index in range(counts):
-            eSum = math.sqrt(
-                pow(kf_spiral[KF_X][index] - odom_spiral[ODOM_X][index], 2) +
-                pow(kf_spiral[KF_Y][index] - odom_spiral[ODOM_Y][index], 2)
+            eSum = eSum + math.sqrt(
+                pow(kf_spiral[KF_X][index+kf_offset] - odom_spiral[ODOM_X][index+odom_offset], 2) +
+                pow(kf_spiral[KF_Y][index+kf_offset] - odom_spiral[ODOM_Y][index+odom_offset], 2)
             )
 
         errors.append(eSum / counts)
 
     best_e, best_run = math.inf, None
     for error, run in zip(errors, runs):
-        print(f"Run Q 0.{Q}, R 0.{R} Error - {error*1000:.3f}e-4")
+        print(f"Run Q 0.{run[0]}, R 0.{run[1]} Error - {error:.3f}")
 
         if error < best_e:
             best_e = error
