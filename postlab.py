@@ -20,15 +20,18 @@ STAMP   =   -1
 POINT = "POINT"
 SPIRAL = "SPIRAL"
 
+NO_FLIP = NO_FLIP_X, NO_FLIP_Y = [1, 1]
+FLIP_X = FLIP_Y = -1
+
 runs = [
-    [1, 5],
-    [5, 1],
-    [5, 5],
-    [5, 9],
-    [9, 5],
+    [1, 5, (FLIP_X, FLIP_Y)],
+    [5, 1, (FLIP_X, FLIP_Y)],
+    [5, 5, (NO_FLIP_X, NO_FLIP_Y)],
+    [5, 9, (FLIP_X, FLIP_Y)],
+    [9, 5, (FLIP_X, FLIP_Y)],
 ]
 
-def load_odom(Q, R, MODE):
+def load_odom(Q, R, MODE, last_t=math.inf, FLIP=NO_FLIP):
     HEADERS = [
         ODOM_X,
         ODOM_Y,
@@ -49,18 +52,22 @@ def load_odom(Q, R, MODE):
                 data[item].append(float(line[item]))
 
             if center is None:
-                center = (data[ODOM_X][-1], data[ODOM_Y][-1])
+                center = (data[ODOM_X][-1], data[ODOM_Y][-1], data[STAMP][-1])
 
             # Center the odom pose
-            data[ODOM_X][-1] = -1 * (data[ODOM_X][-1] - center[0])
-            data[ODOM_Y][-1] = -1 * (data[ODOM_Y][-1] - center[1])
+            data[ODOM_X][-1] = FLIP[0] * (data[ODOM_X][-1] - center[0])
+            data[ODOM_Y][-1] = FLIP[1] * (data[ODOM_Y][-1] - center[1])
+            data[STAMP][-1]  = data[STAMP][-1] - center[2]
 
             data[STAMP][-1] = data[STAMP][-1] / 1e9
+
+            if data[STAMP][-1] >= last_t:
+                break
 
     return data
 
 
-def load_pose(Q, R, MODE):
+def load_pose(Q, R, MODE, last_t=math.inf, FLIP=NO_FLIP):
     HEADERS = [
         IMU_AX,
         IMU_AY,
@@ -92,41 +99,83 @@ def get_col(data, col):
         row[col] for row in data
     ]
 
-def Main():
-    for Q, R in runs:
+def Main(show=False):
+    # Get the lowest timestamp
+    last_t = math.inf
 
-        kf_spiral = load_pose(Q, R, SPIRAL)
-        odom_spiral   = load_odom(Q, R, SPIRAL)
+    # Ensure last time is synchronized
+    if False:
+        for Q, R, _ in runs:
+            kf_spiral = load_pose(Q, R, SPIRAL)
+            odom_spiral = load_odom(Q, R, SPIRAL)
 
-        # point_data = load_pose(Q, R, POINT)
+            last_t = min([last_t, kf_spiral[STAMP][-1], odom_spiral[STAMP][-1]])
+
+        print("")
+
+    errors = []
+
+    for run in runs:
+        Q, R, FLIP = run
+
+        kf_spiral   = load_pose(Q, R, SPIRAL, last_t, FLIP)
+        odom_spiral = load_odom(Q, R, SPIRAL, last_t, FLIP)
 
         # Plot position
-        plt.figure()
+        if show:
+            plt.figure()
 
-        plt.plot(kf_spiral[KF_X], kf_spiral[KF_Y], label="Kalman Pose")
-        plt.plot(odom_spiral[ODOM_X], odom_spiral[ODOM_Y], label="Odom Pose")
+            # plt.suptitle(f"")
 
-        plt.title("Robot Position during Spiral Trajectory")
-        plt.ylabel("Y [m]")
-        plt.xlabel("X [m]")
-        plt.legend()
+            ax = plt.subplot(2, 1, 1)
 
-        plt.show()
+            ax.plot(kf_spiral[KF_X], kf_spiral[KF_Y], label="Kalman Pose")
+            ax.plot(odom_spiral[ODOM_X], odom_spiral[ODOM_Y], label="Odom Pose")
+
+            ax.set_title(f"Robot Position during Spiral Trajectory - Q 0.{Q}, R 0.{R}")
+            ax.set_ylabel("Y [m]")
+            ax.set_xlabel("X [m]")
+            ax.legend()
+            ax.grid()
+
+            ax = plt.subplot(2, 1, 2)
+
+            for i in range(KF_Y):
+                ax.plot(kf_spiral[STAMP], kf_spiral[i])
+
+            plt.show()
+
 
         # Determine error
         counts = min(len(kf_spiral[STAMP]), len(odom_spiral[STAMP]))
         eSum = 0
+
         for index in range(counts):
             eSum = math.sqrt(
                 pow(kf_spiral[KF_X][index] - odom_spiral[ODOM_X][index], 2) +
                 pow(kf_spiral[KF_Y][index] - odom_spiral[ODOM_Y][index], 2)
             )
 
-        e = eSum / counts
-        print(f"Q 0.{Q}, R 0.{R} - {e}")
+        errors.append(eSum / counts)
 
-        return
+    best_e, best_run = math.inf, None
+    for error, run in zip(errors, runs):
+        print(f"Run Q 0.{Q}, R 0.{R} Error - {error*1000:.3f}e-4")
+
+        if error < best_e:
+            best_e = error
+            best_run = run
+
+    print(f"Best run - Q 0.{best_run[0]}, R 0.{best_run[1]}")
+
+    # Plot the point for best trajectory
+    if show:
+        plt.figure()
+
+
+
+        plt.show()
 
 
 if __name__ == "__main__":
-    Main()
+    Main(show=True)
