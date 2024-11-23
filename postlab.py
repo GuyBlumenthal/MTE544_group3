@@ -83,14 +83,14 @@ def load_pose(Q, R, MODE, last_t=math.inf, FLIP=NO_FLIP):
 
     with open(f"Q0{Q}R0{R}_{MODE}/robotPose.csv") as f:
         lines = f.readlines()
+        data['headers'] = lines[0].split(',')
         for line in lines[1:]:
             line = line.strip().split(',')[:-1]
 
             for item in HEADERS:
                 data[item].append(float(line[item]))
 
-            data[STAMP][-1] = data[STAMP][-1] / 1e9
-
+    data[STAMP] = (np.array(data[STAMP]) - data[STAMP][0]) / 1e9
     return data
 
 def get_col(data, col):
@@ -114,36 +114,43 @@ def Main(show=False):
 
     errors = []
 
-    for run in runs:
+    plt.figure()
+    plt.suptitle("Robot Position during Spiral Trajectory")
+
+    plotStart = 3
+    plotEnd =5
+    for i, run in enumerate(runs):
+        print(i)
         Q, R, FLIP = run
 
         kf_spiral   = load_pose(Q, R, SPIRAL, last_t, FLIP)
         odom_spiral = load_odom(Q, R, SPIRAL, last_t, FLIP)
 
         # Plot position
-        if show:
-            plt.figure()
-
+        if plotStart <= i and i < plotEnd and show:
             # plt.suptitle(f"")
 
-            ax = plt.subplot(2, 1, 1)
+            ax = plt.subplot(2, plotEnd-plotStart, 1+i-plotStart)
 
-            ax.plot(kf_spiral[KF_X], kf_spiral[KF_Y], label="Kalman Pose")
-            ax.plot(odom_spiral[ODOM_X], odom_spiral[ODOM_Y], label="Odom Pose")
+            ax.plot(kf_spiral[KF_X], kf_spiral[KF_Y], label="Kalman")
+            ax.plot(odom_spiral[ODOM_X], odom_spiral[ODOM_Y], label="Odom")
 
-            ax.set_title(f"Robot Position during Spiral Trajectory - Q 0.{Q}, R 0.{R}")
+            ax.set_title(f"Position - Q 0.{Q}, R 0.{R}")
             ax.set_ylabel("Y [m]")
             ax.set_xlabel("X [m]")
             ax.legend()
             ax.grid()
 
-            ax = plt.subplot(2, 1, 2)
+            ax = plt.subplot(2, plotEnd-plotStart, plotEnd-plotStart + 1 + i-plotStart)
 
             for i in range(KF_Y):
-                ax.plot(kf_spiral[STAMP], kf_spiral[i])
+                ax.plot(kf_spiral[STAMP], kf_spiral[i], label=kf_spiral['headers'][i].strip())
 
-            plt.show()
-
+            ax.set_title(f"Errors - Q 0.{Q}, R 0.{R}")
+            ax.set_ylabel("Error")
+            ax.set_xlabel("T [s]")
+            ax.legend()
+            ax.grid()
 
         # Determine error
         eSum = 0
@@ -175,6 +182,11 @@ def Main(show=False):
 
         errors.append(eSum / counts)
 
+    if show:
+        # plt.tight_layout()
+        plt.subplots_adjust(hspace=0.4,wspace=0.2)
+        plt.show()
+
     best_e, best_run = math.inf, None
     for error, run in zip(errors, runs):
         print(f"Run Q 0.{run[0]}, R 0.{run[1]} Error - {error:.3f}")
@@ -183,13 +195,27 @@ def Main(show=False):
             best_e = error
             best_run = run
 
+    best_run = runs[2]
     print(f"Best run - Q 0.{best_run[0]}, R 0.{best_run[1]}")
 
     # Plot the point for best trajectory
     if show:
+        Q, R, FLIP = best_run
+        kf_point   = load_pose(Q, R, POINT, last_t, FLIP)
+        odom_point   = load_odom(Q, R, POINT, last_t, [NO_FLIP_X, FLIP_Y])
+
         plt.figure()
 
+        ax = plt.subplot(1, 1, 1)
 
+        ax.plot(kf_point[KF_X], kf_point[KF_Y], label="Kalman Pose")
+        # ax.plot(odom_point[ODOM_X], odom_point[ODOM_Y], label="Odom Pose")
+
+        ax.set_title(f"Robot Position during Spiral Trajectory - Q 0.{Q}, R 0.{R}")
+        ax.set_ylabel("Y [m]")
+        ax.set_xlabel("X [m]")
+        ax.legend()
+        ax.grid()
 
         plt.show()
 
