@@ -125,7 +125,7 @@ class localization(Node):
             odom_msg.pose.pose.position.x,
             odom_msg.pose.pose.position.y,
             euler_from_quaternion(odom_msg.pose.pose.orientation),
-            odom_msg.header.stamp
+            Time.from_msg(odom_msg.header.stamp).nanoseconds
         ])
 
     def odom_callback(self, pose_msg):
