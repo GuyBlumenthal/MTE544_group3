@@ -49,12 +49,13 @@ class planner:
 
         # TODO PART 5 convert the cell pixels into the cartesian coordinates
 
-        Path = list(map(...))
-
-
+        Path = list(map(
+            lambda left, top: (left, -top),
+            search(self.costMap, startPose, endPose)
+        ))
 
         # TODO PART 5 return the path as list of [x,y]
-        return search(self.costMap, startPose, endPose)
+        return Path
 
 
 
