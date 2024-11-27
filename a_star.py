@@ -138,7 +138,7 @@ def search(maze, start, end):
                 d) else move the child to yet_to_visit dict
     """
     # TODO PART 4 find maze has got how many rows and columns
-    no_rows, no_columns = ...
+    no_rows, no_columns = np.shape(maze)
 
     # Loop until you find the end
 
@@ -179,7 +179,7 @@ def search(maze, start, end):
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # TODO PART 4 Make sure within range (check if within maze boundary)
-            if (...):
+            if (node_position[0] < 0 or node_position[0] > no_rows or node_position[1] < 0 or node_position > no_columns):
                 continue
 
             # Make sure walkable terrain
