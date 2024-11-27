@@ -47,6 +47,25 @@ def return_path(current_node, maze):
     return path
 
 
+def h_manhattan(cur_node, end_node):
+    x1, y1 = cur_node
+    x2, y2 = end_node
+
+    return abs(x2-x1) + abs(y2-y1)
+
+def h_euclidean(cur_node, end_node):
+    x1, y1 = cur_node
+    x2, y2 = end_node
+    
+    return sqrt((x2-x1)**2 + (y2-y1)**2)
+
+chosen_h = "euclidean"
+def h(cur_node, end_node):
+    if chosen_h == "manhattan":
+        return h_manhattan(cur_node, end_node)
+    else:
+        return h_euclidean(cur_node, end_node)
+
 def search(maze, start, end):
 
     print("searching ....")
@@ -64,15 +83,15 @@ def search(maze, start, end):
 
     # TODO PART 4 Create start and end node with initized values for g, h and f
     # Use None as parent if not defined
-    start_node = Node(...)
-    start_node.g = ...     # cost from start Node
-    start_node.h = ...     # heuristic estimated cost to end Node
-    start_node.f = ...
+    start_node = Node(None, start)
+    start_node.g = 0     # cost from start Node
+    start_node.h = h(start, end)     # heuristic estimated cost to end Node
+    start_node.f = start_node.g + start_node.h
 
-    end_node = Node(...)
-    end_node.g = ...       # set a large value if not defined
-    end_node.h = ...       # heuristic estimated cost to end Node
-    end_node.f = ...
+    end_node = Node(None, end)
+    end_node.g = 100000       # set a large value if not defined
+    end_node.h = h(end, end)       # heuristic estimated cost to end Node
+    end_node.f = end_node.g + end_node.h
 
     # Initialize both yet_to_visit and visited dictionary
     # in this dict we will put all node that are yet_to_visit for exploration.
@@ -184,7 +203,7 @@ def search(maze, start, end):
             # TODO PART 4 Create the f, g, and h values
             child.g = ...
             # Heuristic costs calculated here, this is using eucledian distance
-            child.h = ...
+            child.h = h(child.position, end)
 
             child.f = child.g + child.h
 
