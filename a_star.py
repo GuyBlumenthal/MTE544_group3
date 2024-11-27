@@ -179,7 +179,7 @@ def search(maze, start, end):
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # TODO PART 4 Make sure within range (check if within maze boundary)
-            if (node_position[0] < 0 or node_position[0] > no_rows or node_position[1] < 0 or node_position > no_columns):
+            if (node_position[0] < 0 or node_position[0] >= no_rows or node_position[1] < 0 or node_position >= no_columns):
                 continue
 
             # Make sure walkable terrain
@@ -197,11 +197,11 @@ def search(maze, start, end):
         for child in children:
 
             # TODO PART 4 Child is on the visited dict (use get method to check if child is in visited dict, if not found then default value is False)
-            if ():
+            if (child.position in visited_dict):
                 continue
 
             # TODO PART 4 Create the f, g, and h values
-            child.g = ...
+            child.g = current_node.g + 1
             # Heuristic costs calculated here, this is using eucledian distance
             child.h = h(child.position, end)
 
