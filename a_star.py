@@ -118,7 +118,7 @@ def search(maze, start, end):
             [-1,1],  # go up left
             [-1,-1],  # go down left
             [1,1],  # go up right
-            [1,0]]  # go down right
+            [1,-1]]  # go down right
 
     """
         1) We first get the current node by comparing all f cost and selecting the lowest cost node for further expansion
