@@ -46,7 +46,7 @@ class decision_maker(Node):
         self.reachThreshold=0.01
 
         # TODO PART 5 your localization type
-        self.localizer=localization(type=kalmanFilter])
+        self.localizer=localization(type=kalmanFilter)
 
 
 
@@ -146,8 +146,8 @@ class decision_maker(Node):
             pose = PoseStamped()
             pose.header.frame_id = "map"
             pose.header.stamp = self.get_clock().now().to_msg()
-            pose.pose.position.x = point[0]
-            pose.pose.position.y = point[1]
+            pose.pose.position.x = float(point[0])
+            pose.pose.position.y = float(point[1])
 
             # Set the orientation of the pose. Here, it's set to a default orientation.
             pose.pose.orientation.x = 0.0
