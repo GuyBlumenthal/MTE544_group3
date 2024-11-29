@@ -1,6 +1,7 @@
 
 from mapUtilities import *
 from a_star import *
+from utilities import Logger
 
 POINT_PLANNER=0; TRAJECTORY_PLANNER=1
 
@@ -9,6 +10,9 @@ class planner:
 
         self.type=type_
         self.mapName=mapName
+
+        self.path = 0
+        self.path_logger = Logger("path.csv", ["path_x", "path_y", "path", "index"])
 
 
     def plan(self, startPose, endPose):
@@ -57,6 +61,9 @@ class planner:
         print(f"path {Path}")
 
         # TODO PART 5 return the path as list of [x,y]
+        for i, point in enumerate(Path):
+            self.path_logger.log_values([point[0], point[1], self.path, i])
+            self.path = self.path + 1
         return Path
 
 

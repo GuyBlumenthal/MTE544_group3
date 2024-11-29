@@ -34,7 +34,7 @@ class localization(Node):
         super().__init__("localizer")
         
         
-        self.loc_logger=Logger( loggerName , loggerHeaders)
+        self.loc_logger=Logger( loggerName , ["odom_x", "odom_y", "odom_th", "stamp"])
         self.pose=None
         
         if type==rawSensors:
@@ -103,6 +103,13 @@ class localization(Node):
                             xhat[1],
                             normalize_angle(xhat[2]),
                             odom_msg.header.stamp])
+        
+        odom_pose=[ odom_msg.pose.pose.position.x,
+            odom_msg.pose.pose.position.y,
+            euler_from_quaternion(odom_msg.pose.pose.orientation),
+            odom_msg.header.stamp]
+        
+        self.loc_logger.log_values([odom_pose[0], odom_pose[1], odom_pose[2], Time.from_msg(odom_pose[3]).nanoseconds])
         
     def odom_callback(self, pose_msg):
         

@@ -92,7 +92,7 @@ def h_euclidean(cur_node, end_node):
     
     return sqrt((x2-x1)**2 + (y2-y1)**2)
 
-chosen_h = "euclidean"
+chosen_h = "manhattan"
 def h(cur_node, end_node):
     if chosen_h == "manhattan":
         return h_manhattan(cur_node, end_node)
