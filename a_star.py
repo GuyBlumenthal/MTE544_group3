@@ -1,7 +1,40 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from math import sqrt
+from math import sqrt, floor
 
+def directions(mag):
+    return [
+        [0,1],  # go up
+        [-1,0],  # go left
+        [0,-1],  # go down
+        [1,0],  # go right
+        [-floor(mag/sqrt(2)), floor(mag/sqrt(2))],  # go up left
+        [-floor(mag/sqrt(2)),-floor(mag/sqrt(2))],  # go down left
+        [ floor(mag/sqrt(2)), floor(mag/sqrt(2))],  # go up right
+        [ floor(mag/sqrt(2)),-floor(mag/sqrt(2))]  # go down right
+    ]
+
+def has_wall_neighbours(maze, position, distance):
+    ds = directions(distance)
+
+    if distance == 0:
+        return False
+    
+    # for d in ds:
+    #     # Check if its wall, if so return distance
+    #     if maze[position[0] + d[0], position[1] + d[1]] > 0.5:
+    #         return True
+
+    # return has_wall_neighbours(maze, position, distance - 1)
+
+    for x in range(-distance, distance):
+        for y in range(-distance, distance):
+            try:
+                if maze[position[0] + x, position[1] + y] > 0.8:
+                    return True
+            except:
+                pass
+    return False
 
 class Node:
     """
@@ -111,14 +144,16 @@ def search(maze, start, end):
 
     # TODO PART 4 what squares do we search . serarch movement is left-right-top-bottom
     # (4 or 8 movements) from every positon
-    move = [[0,1],  # go up
-            [-1,0],  # go left
-            [0,-1],  # go down
-            [1,0],  # go right
-            [-1,1],  # go up left
-            [-1,-1],  # go down left
-            [1,1],  # go up right
-            [1,-1]]  # go down right
+    move = [
+        [0,1],  # go up
+        [-1,0],  # go left
+        [0,-1],  # go down
+        [1,0],  # go right
+        [-1,1],  # go up left
+        [-1,-1],  # go down left
+        [1,1],  # go up right
+        [1,-1]  # go down right
+    ]
 
     """
         1) We first get the current node by comparing all f cost and selecting the lowest cost node for further expansion
@@ -184,6 +219,9 @@ def search(maze, start, end):
 
             # Make sure walkable terrain
             if maze[node_position[0], node_position[1]] > 0.8:
+                continue
+
+            if has_wall_neighbours(maze, node_position, 8):
                 continue
 
             # Create new node

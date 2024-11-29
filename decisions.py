@@ -109,6 +109,9 @@ class decision_maker(Node):
 
 
 
+        # self.publishPathOnRviz2(self.goal)
+        # return True
+
         if reached_goal:
             print("reached goal")
             self.publisher.publish(vel_msg)
