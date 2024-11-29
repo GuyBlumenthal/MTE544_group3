@@ -215,3 +215,4 @@ def search(maze, start, end):
 
             # Add the child to the yet_to_visit list
             yet_to_visit_dict[child.position] = child
+    print("failed to find path")
