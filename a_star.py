@@ -2,33 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import sqrt, floor
 
-def directions(mag):
-    return [
-        [0,1],  # go up
-        [-1,0],  # go left
-        [0,-1],  # go down
-        [1,0],  # go right
-        [-floor(mag/sqrt(2)), floor(mag/sqrt(2))],  # go up left
-        [-floor(mag/sqrt(2)),-floor(mag/sqrt(2))],  # go down left
-        [ floor(mag/sqrt(2)), floor(mag/sqrt(2))],  # go up right
-        [ floor(mag/sqrt(2)),-floor(mag/sqrt(2))]  # go down right
-    ]
-
 def has_wall_neighbours(maze, position, distance):
-    ds = directions(distance)
-
-    if distance == 0:
-        return False
-    
-    # for d in ds:
-    #     # Check if its wall, if so return distance
-    #     if maze[position[0] + d[0], position[1] + d[1]] > 0.5:
-    #         return True
-
-    # return has_wall_neighbours(maze, position, distance - 1)
-
+    '''
+    Check if a node has nearby walls in a square
+    block of size distance around the center position
+    '''
     for x in range(-distance, distance):
         for y in range(-distance, distance):
+            # Try catch ensures position is in the maze
             try:
                 if maze[position[0] + x, position[1] + y] > 0.8:
                     return True
@@ -80,24 +61,27 @@ def return_path(current_node, maze):
     return path
 
 
+# Manhattan Heuristic
 def h_manhattan(cur_node, end_node):
     x1, y1 = cur_node
     x2, y2 = end_node
 
     return abs(x2-x1) + abs(y2-y1)
 
+# Euclidean Heuristic
 def h_euclidean(cur_node, end_node):
     x1, y1 = cur_node
     x2, y2 = end_node
-    
+
     return sqrt((x2-x1)**2 + (y2-y1)**2)
 
-chosen_h = "manhattan"
-def h(cur_node, end_node):
-    if chosen_h == "manhattan":
-        return h_manhattan(cur_node, end_node)
-    else:
-        return h_euclidean(cur_node, end_node)
+# Select the write heuristic
+MANHATTAN = "manhattan"
+EUCLIDEAN = "euclidean"
+h = {
+    MANHATTAN: h_manhattan,
+    EUCLIDEAN: h_euclidean
+}[MANHATTAN]
 
 def search(maze, start, end):
 
@@ -142,8 +126,7 @@ def search(maze, start, end):
     outer_iterations = 0
     max_iterations = (len(maze) // 2) ** 10
 
-    # TODO PART 4 what squares do we search . serarch movement is left-right-top-bottom
-    # (4 or 8 movements) from every positon
+    # Go up, left, down, right and in all diagonals
     move = [
         [0,1],  # go up
         [-1,0],  # go left
@@ -165,18 +148,17 @@ def search(maze, start, end):
             b) check if a valid position exist (boundary will make few nodes invalid)
             c) if any node is a wall then ignore that
             d) add to valid children node list for the selected parent
-            
+
             For all the children node
                 a) if child in visited dict then ignore it and try next node
                 b) calculate child node g, h and f values
                 c) if child in yet_to_visit dict then ignore it
                 d) else move the child to yet_to_visit dict
     """
-    # TODO PART 4 find maze has got how many rows and columns
+    # Find row dimensions
     no_rows, no_columns = np.shape(maze)
 
     # Loop until you find the end
-
     while len(yet_to_visit_dict) > 0:
 
         # Every time any node is referred from yet_to_visit list, counter of limit operation incremented
@@ -210,10 +192,10 @@ def search(maze, start, end):
 
         for new_position in move:
 
-            # TODO PART 4 Get node position
+            # Get new node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
-            # TODO PART 4 Make sure within range (check if within maze boundary)
+            # Make sure within range (check if within maze boundary)
             if (node_position[0] < 0 or node_position[0] >= no_rows or node_position[1] < 0 or node_position[1] >= no_columns):
                 continue
 
@@ -221,6 +203,7 @@ def search(maze, start, end):
             if maze[node_position[0], node_position[1]] > 0.8:
                 continue
 
+            # Make sure passable for robot (Far from walls)
             if has_wall_neighbours(maze, node_position, 8):
                 continue
 
@@ -231,14 +214,13 @@ def search(maze, start, end):
             children.append(new_node)
 
         # Loop through children
-
         for child in children:
 
-            # TODO PART 4 Child is on the visited dict (use get method to check if child is in visited dict, if not found then default value is False)
+            # Check if child is already visited
             if (child.position in visited_dict):
                 continue
 
-            # TODO PART 4 Create the f, g, and h values
+            # Create the f, g, and h values
             child.g = current_node.g + 1
             # Heuristic costs calculated here, this is using eucledian distance
             child.h = h(child.position, end)
